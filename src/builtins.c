@@ -109,6 +109,49 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
 static int
 builtin_exit(struct command *cmd, struct builtin_redir const *redir_list)
 {
+
+  /* too many arguemnts passed to builtin exit, print error message */
+  if (cmd->word_count > 2) {
+    dprintf(get_pseudo_fd(redir_list, STDERR_FILENO),
+                  "exit: `%s': Invalid argument",
+                  cmd->words[2]);
+    return -1;
+  }
+
+  else if (cmd->word_count == 2) {
+    char *endptr;
+
+    char *exit_val_str = cmd->words[1];
+
+    /* ensure that exit value is a numeric type, else return -1 */
+    for (size_t i = 0; i < strlen(exit_val_str); ++i) {
+      if (!isdigit(exit_val_str[i])) {
+        dprintf(get_pseudo_fd(redir_list, STDERR_FILENO),
+                  "exit: `%s': Invalid argument",
+                  cmd->words[1]);
+        return -1;
+      }
+    }
+
+    /* convert exit value to numeric type*/
+    long exitval = strtol(exit_val_str, &endptr, 10);
+
+    /* ensure that exit value is between 0 to 255, else exit status is undefined 
+    if (exitval < 0 || exitval > 255) {
+      dprintf(get_pseudo_fd(redir_list, STDERR_FILENO),
+                  "exit: `%s': Invalid argument",
+                  cmd->words[1]);
+      return -1;
+    }
+    */ 
+    
+    params.status = exitval; 
+  }
+
+
+
+
+
   /* TODO: Set params.status to the appropriate value before exiting */
   bigshell_exit();
   return -1;
