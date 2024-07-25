@@ -526,9 +526,12 @@ run_command_list(struct command_list *cl)
          * they are assigned (export_all flag) */
         if (do_variable_assignment(cmd, 1) < 0) err(1, 0);
 
-        /* Restore signals to their original values when bigshell was invoked
+        /* 
+        TODO UNCOMMENT THIS LINE WHEN NOT TESTING NON-BUILTINS
+        Restore signals to their original values when bigshell was invoked
          */
-        if (signal_restore() < 0) err(1, 0);
+
+        //if (signal_restore() < 0) err(1, 0);
 
         /* Execute the command */
         /* [TODO] execute the command described by the list of words
@@ -541,6 +544,14 @@ run_command_list(struct command_list *cl)
          *
          *  XXX Note: cmd->words is a null-terminated array of strings. Nice!
          */
+
+
+        /*
+        execvp() takes array of points to null-terminated array of strings 
+        (cmd->words) and searches for the executable file in the PATH environment 
+        variable at cmd-words[0]. 
+        */
+        int ret = execvp(cmd->words[0], cmd->words); 
 
         err(127, 0); /* Exec failure -- why might this happen? */
         assert(0);   /* UNREACHABLE -- This should never be reached ABORT! */
