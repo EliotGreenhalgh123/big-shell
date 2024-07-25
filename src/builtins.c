@@ -89,9 +89,45 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
       return -1;
     }
   }
-  /*TODO: Implement cd with arguments 
+
+  /* too many arguments passed to cd, return -1 to indicate error */
+  else if (cmd->word_count > 2) {
+    dprintf(get_pseudo_fd(redir_list, STDERR_FILENO), "cd: `%s': Invalid argument",
+                  cmd->words[2]);
+    return -1;
+  }
+
+  /* correct number of arguments, assign target_dir correct value */
+  else if (cmd->word_count == 2) {
+    target_dir = cmd->words[1];
+  }
+
+  /* if chdir returns -1, raise error */
+  if (chdir(target_dir) == -1) {
+    dprintf(get_pseudo_fd(redir_list, STDERR_FILENO), "cd: chdir failed\n");
+    return -1; 
+  }
+
+  /*
+  TODO: CLEAN UP COMMENTS/TEST PRINTS 
    */
-  chdir(target_dir);
+  
+  /* update PWD with the new working directory. If vars_set fails, return -1 */
+
+  //char const *current_directory = vars_get("PWD");
+  //printf("%s\n", current_directory);
+
+  /* update PWD with the new working directory. If vars_set fails, return -1 */
+  if (vars_set("PWD", target_dir) != 0) {
+    dprintf(get_pseudo_fd(redir_list, STDERR_FILENO), "cd: could not update PWD\n");
+    return -1;
+  } 
+
+
+  //printf("%s\n", vars_get("PWD"));
+
+  
+  //chdir(target_dir);
   return 0;
 }
 
@@ -194,6 +230,12 @@ builtin_unset(struct command *cmd, struct builtin_redir const *redir_list)
 {
   for (size_t i = 1; i < cmd->word_count; ++i) {
     /* TODO: Unset variables */
+
+
+    vars_unset(cmd->word_count[i]); 
+
+
+    
   }
   return 0;
 }
