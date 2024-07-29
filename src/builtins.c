@@ -108,6 +108,12 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
     return -1; 
   }
 
+
+  char const *cwd_buf[256];
+  getcwd(cwd_buf, sizeof(cwd_buf));
+
+
+
   /*
   TODO: CLEAN UP COMMENTS/TEST PRINTS 
    */
@@ -118,14 +124,13 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
   //printf("%s\n", current_directory);
 
   /* update PWD with the new working directory. If vars_set fails, return -1 */
-  if (vars_set("PWD", target_dir) != 0) {
+  if (vars_set("PWD", cwd_buf) != 0) {
     dprintf(get_pseudo_fd(redir_list, STDERR_FILENO), "cd: could not update PWD\n");
     return -1;
   } 
 
 
-  //printf("%s\n", vars_get("PWD"));
-
+  printf("%s\n", vars_get("PWD"));
   
   //chdir(target_dir);
   return 0;
