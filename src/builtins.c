@@ -114,7 +114,7 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
   
   /* update PWD with the new working directory. If vars_set fails, return -1 */
 
-  //char const *current_directory = vars_get("PWD");
+  char const *current_directory = vars_get("PWD");
   //printf("%s\n", current_directory);
 
   /* update PWD with the new working directory. If vars_set fails, return -1 */

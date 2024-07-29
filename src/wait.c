@@ -23,9 +23,20 @@ wait_on_fg_pgid(pid_t const pgid)
    * XXX review kill(2)
    */
 
+
+
+  if (kill(pgid, SIGCONT) != 0) {
+    /* TODO error message */
+    return -1;
+  } 
+
+
   if (is_interactive) {
     /* TODO make 'pgid' the foreground process group
      * XXX review tcsetpgrp(3) */
+    if (tcsetpgrp(0, pgid) != 0) {
+      return -1;
+    }
   }
 
   /* XXX From this point on, all exit paths must account for setting bigshell
