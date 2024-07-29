@@ -423,15 +423,26 @@ run_command_list(struct command_list *cl)
 
     pid_t child_pid = 0;
     /*
-     * [TODO] Fork process if:
+     * [DONE] Fork process if:
      *       Not a buitin command, OR
      *       Not a foreground command
-     * [TODO] Re-assign child_pid to the new process id
-     * [TODO] Handle errors if they occur
+     * [DONE] Re-assign child_pid to the new process id
+     * [DONE] Handle errors if they occur
      */
-    int const did_fork = 0; /* TODO */
+
+
+    // fork if not a builtin or not a foreground command
+    int const did_fork = !is_builtin || !is_fg; 
     if (did_fork) {
-      /* [TODO] fork */
+      /* [DONE] fork */
+      /* 
+      /* assign child_pid to the new pid returned by fork()
+      /* if fork fails and returns a negative value, goto error
+      */
+      child_pid = fork();
+      if(child_pid  < 0) {
+        goto err;
+      }
 
       /* All of the processes in a pipeline (or single command) belong to the
        * same process group. This is how the shell manages job control. We will
@@ -447,7 +458,7 @@ run_command_list(struct command_list *cl)
        * it in both the parent and the child, and ignore an EACCES error if it
        * occurs.
        */
-
+      
       if (setpgid(child_pid, pipeline_data.pgid) < 0) {
         if (errno == EACCES) errno = 0;
         else goto err;
@@ -534,7 +545,7 @@ run_command_list(struct command_list *cl)
         //if (signal_restore() < 0) err(1, 0);
 
         /* Execute the command */
-        /* [TODO] execute the command described by the list of words
+        /* [DONE] execute the command described by the list of words
          * (cmd->words).
          *
          *  XXX Carefully review man 3 exec. Choose the correct function that:

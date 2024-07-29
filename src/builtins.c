@@ -108,12 +108,14 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
     return -1; 
   }
 
-
-  /* use getcwd to correctly retrieve the current working directory after
+  /* use getcwd to correctly retrieve the new working directory after
      successful chdir */
-  char const current_directory[256];
-  getcwd(current_directory, sizeof(current_directory));
-
+  char const current_directory[256]; 
+  // getcwd returns NULL pointer if valid pathname pointer cannot be returned
+  if (getcwd(current_directory, sizeof(current_directory)) == NULL) {
+    dprintf(get_pseudo_fd(redir_list, STDERR_FILENO), "cd: cannot get CWD\n");
+    return -1;
+  };
 
   /* update PWD with the new working directory. If vars_set fails, return -1 */
   if (vars_set("PWD", current_directory) != 0) {
@@ -121,10 +123,6 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
     return -1;
   } 
 
-
-  //printf("%s\n", vars_get("PWD"));
-  
-  //chdir(target_dir);
   return 0;
 }
 
