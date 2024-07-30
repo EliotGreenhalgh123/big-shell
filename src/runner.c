@@ -42,8 +42,14 @@ expand_command_words(struct command *cmd)
   for (size_t i = 0; i < cmd->word_count; ++i) {
     expand(&cmd->words[i]);
   }
-  /* TODO Assignment values */
-  /* TODO I/O Filenames */
+  /* DONE Assignment values */
+  for (size_t i = 0; i < cmd->assignment_count; ++i) {
+    expand(&cmd->assignments[i]->value);
+  }
+  /* DONE I/O Filenames */
+  for (size_t i = 0; i < cmd->io_redir_count; ++i) {
+    expand(&cmd->io_redirs[i]->filename);
+  }
   return 0;
 }
 
@@ -280,11 +286,18 @@ do_io_redirects(struct command *cmd)
        * values for n when omitted: 0 for <& and 1 for >&. */
 
       if (strcmp(r->filename, "-") == 0) {
+
+        
         /* [n]>&- and [n]<&- close file descriptor [n] */
-        /* TODO close file descriptor n.
+        /* DONE close file descriptor n.
          *
          * XXX What is n? Look for it in `struct io_redir->???` (parser.h)
+         * n is io_number;  Left-hand file descriptor operand  
          */
+         // if fclose returns EOF, goto err
+         if (fclose(r->io_number) != 0) {
+          goto err;
+         }
       } else {
         /* The filename is interpreted as a file descriptor number to
          * redirect to. For example, 2>&1 duplicates file descriptor 1
