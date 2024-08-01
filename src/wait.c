@@ -32,7 +32,7 @@ wait_on_fg_pgid(pid_t const pgid)
   if (is_interactive) {
     /* DONE make 'pgid' the foreground process group
      * XXX review tcsetpgrp(3) */
-    if (tcsetpgrp(0, pgid) != 0) {
+    if (tcsetpgrp(STDIN_FILENO, pgid) != 0) {
       return -1;
     }
   }
@@ -114,17 +114,22 @@ out:
   if (is_interactive) {
 
 
-    /* DONE make bigshell the foreground process group again
+    /* TODO make bigshell the foreground process group again
      * XXX review tcsetpgrp(3)
      *
      * Note: this will cause bigshell to receive a SIGTTOU signal.
      *       You need to also finish signal.c to have full functionality here.
      *       Otherwise you bigshell will get stopped.
      */
-     /* tcgetgpgrp is called with 0 (stdin) for filedes to get the pgid for bigshell */
-     if (tcsetpgrp(0, tcgetpgrp(0)) != 0) {
+     /* tcgetgpgrp is called with STDIN_FILENO for filedes */
+
+    /*pid_t this_pgid = tcgetpgrp(STDIN_FILENO);
+
+    printf("[%jd]", (intmax_t)this_pgid);
+
+     if (tcsetpgrp(0, this_pgid) != 0) {
       retval = -1;
-    }
+    } */ 
     
   }
   return retval;
