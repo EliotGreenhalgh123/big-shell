@@ -107,20 +107,20 @@ get_io_flags(enum io_operator io_op)
   switch (io_op) {
     case OP_LESSAND: /* <& */
     case OP_LESS:    /* < */
-      flags = 0;     /* TODO */
+      flags = O_RDONLY;     /* DONE: open to read */
       break;
     case OP_GREATAND: /* >& */
     case OP_GREAT:    /* > */
-      flags = 0;      /* TODO */
+      flags = O_WRONLY | O_CREAT | O_EXCL;      /* DONE: open to write, create if doesn't exist, fail if exist */
       break;
     case OP_DGREAT: /* >> */
-      flags = 0;    /* TODO */
+      flags = O_WRONLY | O_CREAT | O_APPEND;    /* DONE: open to write, create if doesn't exist, append mode */
       break;
     case OP_LESSGREAT: /* <> */
-      flags = 0;       /* TODO */
+      flags = O_RDWR | O_CREAT;       /* DONE: open to read/write, create if doesn't exist */
       break;
     case OP_CLOBBER: /* >| */
-      flags = 0;     /* TODO */
+      flags = O_WRONLY | O_CREAT | O_TRUNC;     /* DONE: open to write, create if doesn't exist, truncate mdoe */
       break;
   }
   return flags;
