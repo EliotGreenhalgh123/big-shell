@@ -140,8 +140,20 @@ static int
 move_fd(int src, int dst)
 {
   if (src == dst) return dst;
-  /* TODO move src to dst */
-  /* TODO close src */
+  /* DONE move src to dst 
+  * dup2 causes dst to refer to src, if a negative int is returned, dup2
+  * failed. Else, dup2 returns the filedes of dst
+  */
+  if (dup2(src, dst) < 0) {
+    return -1; 
+  }
+  /* DONE close src 
+  * if close does not return 0, then error has occured. Else src is closed
+  */
+  if (close(src) != 0) {
+    return -1;
+  }
+
   return dst;
 }
 
