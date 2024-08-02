@@ -66,8 +66,16 @@ do_variable_assignment(struct command const *cmd, int export_all)
 {
   for (size_t i = 0; i < cmd->assignment_count; ++i) {
     struct assignment *a = cmd->assignments[i];
-    /* TODO Assign */
-    /* TODO Export (if export_all != 0) */
+    /* DONE Assign */
+    if (vars_set(a->name, a->value) != 0) {
+      return -1;
+    }
+    /* DONE Export (if export_all != 0) */
+    if (export_all != 0) {
+      if (vars_export(a->name) != 0) {
+        return -1;
+      }
+    }
   }
   return 0;
 }
@@ -76,7 +84,7 @@ static int
 get_io_flags(enum io_operator io_op)
 {
   int flags = 0;
-  /* TODO: Each IO operator has specified behavior. Select the appropriate
+  /* DONE: Each IO operator has specified behavior. Select the appropriate
    * file flags.
    *
    * Note: labels not followed by a break statement fall through to the
@@ -330,7 +338,15 @@ do_io_redirects(struct command *cmd)
             && src <= INT_MAX /* <--- this is *critical* bounds checking when
                                  downcasting */
         ) {
-          /* TODO duplicate src to dst. */
+          /* DONE duplicate src to dst. 
+          * use move_fd to move src to dest (r->io_number is the filedes)
+          * if it is an error, goto err
+          */
+
+          if (move_fd(src, r->io_number) < 0) {
+            goto err;
+          }
+          
         } else {
           /* XXX Syntax error--(not a valid number)--we can "recover" by
            * attempting to open a file instead. That's what bash does.
