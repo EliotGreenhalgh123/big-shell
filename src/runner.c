@@ -591,10 +591,23 @@ run_command_list(struct command_list *cl)
         /* Redirect the two standard streams overrides IF they are not set to
          * -1 This sets up pipeline redirection
          *
-         * [TODO] move upstream_pipefd to STDIN_FILENO  if it's valid
+         * [DONE] move upstream_pipefd to STDIN_FILENO  if it's valid
          *
-         * [TODO] move downstream_pipefd to STDOUT_FILENO if it's valid
+         * [DONE] move downstream_pipefd to STDOUT_FILENO if it's valid
          */
+
+         // move upstream pipe to stdin
+         if (has_upstream_pipe) {
+          if (move_fd(upstream_pipefd, 0) < 0) {
+            goto err;
+          }
+         }
+         // move downstream pipe fd to stdout 
+         if (has_downstream_pipe) {
+          if (move_fd(downstream_pipefd, 1) < 0) {
+            goto err;
+          }
+         }
 
         /* Now handle the remaining redirect operators from the command. */
         if (do_io_redirects(cmd) < 0) err(1, 0);
@@ -608,7 +621,7 @@ run_command_list(struct command_list *cl)
         Restore signals to their original values when bigshell was invoked
          */
 
-        //if (signal_restore() < 0) err(1, 0);
+        if (signal_restore() < 0) err(1, 0);
 
         /* Execute the command */
         /* [DONE] execute the command described by the list of words
