@@ -34,13 +34,27 @@ static struct sigaction ignore_action = {.sa_handler = SIG_IGN},
 int
 signal_init(void)
 {
-  /* TODO Initialize signals, store old actions 
+  /* DONE Initialize signals, store old actions 
    *
    * e.g. sigaction(SIGNUM, &new_handler, &saved_old_handler);
    *
    * */
-  errno = ENOSYS; /* not implemented */
-  return -1;
+  /* 
+   * sigaction specifies the behavior of the given signal 
+   * the signals SIGTSTP, SIGINT, and SIGTTOU are set to be ignored (.sa_handler = SIG_IGN)
+   * the previously associated action is stored at old_sigtstp, old_sigint, and old_sigttou respectively
+   */
+  if (sigaction(SIGTSTP, &ignore_action, &old_sigtstp) != 0) {
+    return -1; 
+  }
+  if (sigaction(SIGINT, &ignore_action, &old_sigint) != 0) {
+    return -1;
+  }
+  if (sigaction(SIGTTOU, &ignore_action, &old_sigttou) != 0) {
+    return -1;
+  }
+  //errno = ENOSYS; /* not implemented */
+  return 0;
 }
 
 /** enable signal to interrupt blocking syscalls (read/getline, etc) 
