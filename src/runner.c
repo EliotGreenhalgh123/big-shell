@@ -291,7 +291,7 @@ do_builtin_io_redirects(struct command *cmd, struct builtin_redir **redir_list)
  * will only ever happen in forked child processes--and can't affect the shell
  * itself. Iterate over the list of redirections and apply each one in sequence.
  *
- * TODO
+ * DONE
  */
 static int
 do_io_redirects(struct command *cmd)
@@ -360,17 +360,30 @@ do_io_redirects(struct command *cmd)
     file_open:;
       int flags = get_io_flags(r->io_op);
       gprintf("attempting to open file %s with flags %d", r->filename, flags);
-      /* TODO Open the specified file with the appropriate flags and mode
+      /* DONE Open the specified file with the appropriate flags and mode
        *
        * XXX Note: you can supply a mode to open() even if you're not creating a
        * file. it will just ignore that argument.
        */
+      /* open the file with the specified flags, create if not exist (0777) mode */
+      int open_filedes;
+      open_filedes = open(r->filename, flags, 0777) ;
 
-      /* TODO Move the opened file descriptor to the redirection target */
+      /* file descriptor < 0 indicates error with open(), goto err */
+      if (open_filedes < 0) {
+        goto err;
+      }
+
+      /* DONE Move the opened file descriptor to the redirection target */
       /* XXX use move_fd() */
+      /* use move_fd so the opened filedes is refered to by redirection target */
+      if (move_fd(open_filedes, r->io_number) < 0) {
+        goto err;
+      }
+
     }
     if (0) {
-    err: /* TODO Anything that can fail should jump here. No silent errors!!! */
+    err: /* DONE Anything that can fail should jump here. No silent errors!!! */
       status = -1;
     }
   }
