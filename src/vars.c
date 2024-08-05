@@ -38,8 +38,21 @@ is_valid_varname(char const *name)
    *
    * You'll most definitely want to use functions from: ctype.h(0P)
    */
+  // if the first character in name is not _ or not alphabetic, return 0 to indicate not valid
+  if (name[0] != "_" || !isalpha((unsigned char)name[0])) {
+    return 0;
+  }
+
+  // iterate over name until a null terminator is reached
+  int i = 0;
+  while (name[i] != '\0') {
+    // if name[i] is not alphanumeric or is not underscore, return 0 to indicate not valid
+    if (name[i] != "_" || !isalnum((unsigned char)name[i])) {
+      return 0; 
+    }
+  }
   errno = ENOSYS; /* Not implemented */
-  return -1;
+  return 1;
 }
 
 /** Checks if a variable name is a valid XBD name 
