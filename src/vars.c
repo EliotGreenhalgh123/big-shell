@@ -39,7 +39,7 @@ is_valid_varname(char const *name)
    * You'll most definitely want to use functions from: ctype.h(0P)
    */
   // if the first character in name is not _ or not alphabetic, return 0 to indicate not valid
-  if (name[0] != "_" || !isalpha((unsigned char)name[0])) {
+  if (name[0] != '_' || !isalpha((unsigned char)name[0])) {
     return 0;
   }
 
@@ -47,7 +47,7 @@ is_valid_varname(char const *name)
   int i = 0;
   while (name[i] != '\0') {
     // if name[i] is not alphanumeric or is not underscore, return 0 to indicate not valid
-    if (name[i] != "_" || !isalnum((unsigned char)name[i])) {
+    if (name[i] != '_' || !isalnum((unsigned char)name[i])) {
       return 0; 
     }
   }
@@ -67,8 +67,9 @@ vars_is_valid_varname(char const *name)
 {
   /* TODO: Implement argument validation before tail-calling internal
    * is_valid_varname() function. */
-  errno = ENOSYS;
-  return -1;
+  
+  if (!name) return -1;
+  return is_valid_varname(name); 
 }
 
 /** returns nullptr if not found 
