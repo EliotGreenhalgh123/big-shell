@@ -119,17 +119,17 @@ out:
      *
      * Note: this will cause bigshell to receive a SIGTTOU signal.
      *       You need to also finish signal.c to have full functionality here.
-     *       Otherwise you bigshell will get stopped.
+     *       Otherwise your bigshell will get stopped.
      */
      /* tcgetgpgrp is called with STDIN_FILENO for filedes */
 
-    /*pid_t this_pgid = tcgetpgrp(STDIN_FILENO);
+    pid_t this_pgid = getpgrp();
 
-    printf("[%jd]", (intmax_t)this_pgid);
+    //printf("[%jd]", (intmax_t)this_pgid);
 
      if (tcsetpgrp(0, this_pgid) != 0) {
       retval = -1;
-    } */ 
+    }  
     
   }
   return retval;
