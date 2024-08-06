@@ -67,12 +67,15 @@ do_variable_assignment(struct command const *cmd, int export_all)
   for (size_t i = 0; i < cmd->assignment_count; ++i) {
     struct assignment *a = cmd->assignments[i];
     /* DONE Assign */
-    if (vars_set(a->name, a->value) != 0) {
+
+    //printf("%s, %s", a->name, a->value);
+
+    if (vars_set(a->name, a->value) < 0) {
       return -1;
     }
     /* DONE Export (if export_all != 0) */
     if (export_all != 0) {
-      if (vars_export(a->name) != 0) {
+      if (vars_export(a->name) < 0) {
         return -1;
       }
     }
