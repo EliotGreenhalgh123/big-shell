@@ -644,7 +644,7 @@ run_command_list(struct command_list *cl)
         (cmd->words) and searches for the executable file in the PATH environment 
         variable at cmd-words[0]. 
         */
-        int ret = execvp(cmd->words[0], cmd->words); 
+        execvp(cmd->words[0], cmd->words); 
 
         err(127, 0); /* Exec failure -- why might this happen? */
         assert(0);   /* UNREACHABLE -- This should never be reached ABORT! */
