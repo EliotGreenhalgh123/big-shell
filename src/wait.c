@@ -66,14 +66,15 @@ wait_on_fg_pgid(pid_t const pgid)
 
 
           /* DONE set params.status to the correct value */
-          params.status = WEXITSTATUS(status);
+          params.status = 128 + WEXITSTATUS(status);
 
 
         } else if (WIFSIGNALED(status)) {
 
 
           /* DONE set params.status to the correct value */
-          params.status = WTERMSIG(status);
+          // 
+          params.status = 128 + WTERMSIG(status);
 
 
         }
@@ -121,7 +122,7 @@ out:
      *       You need to also finish signal.c to have full functionality here.
      *       Otherwise your bigshell will get stopped.
      */
-     /* tcgetgpgrp is called with STDIN_FILENO for filedes */
+     /*  */
 
     pid_t this_pgid = getpgrp();
 
