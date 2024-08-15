@@ -40,22 +40,20 @@ is_valid_varname(char const *name)
    */
   // if the first character in name is not _ or not alphabetic, return 0 to indicate not valid
   if (name[0] != '_' && !isalpha((unsigned char)name[0])) {
-    //printf("err here");
     return 0;
   }
-  //printf("safe here");
+ 
   // iterate over name until a null terminator is reached
   int i = 0;
   while (name[i] != '\0') {
     // if name[i] is not alphanumeric or is not underscore, return 0 to indicate not valid
     if (name[i] != '_' && !isalnum((unsigned char)name[i])) {
-      //printf("validation err");
       return 0; 
     }
     i += 1;
   }
   //errno = ENOSYS; /* Not implemented */
-  //printf("valid var");
+
   return 1;
 }
 
@@ -156,21 +154,16 @@ ensure_var(char const *name)
 int
 vars_set(char const *name, char const *value)
 {
-  //printf("%s, %s", name, value);
   if (!name || !value || !is_valid_varname(name)) {
-    //printf("err here");
     errno = EINVAL;
     return -1;
   }
 
-  //printf("%s, %s", name, value);
 
   gprintf("vars_set(%s, %s)", name, value);
 
   struct var *v = ensure_var(name);
   if (!v) {printf("no"); return -1;}
-
-  //printf("ensured");
 
   if (v->export) {
     gprintf("%s=%s is exported, updating env", name, value);
