@@ -66,7 +66,7 @@ wait_on_fg_pgid(pid_t const pgid)
 
 
           /* DONE set params.status to the correct value */
-          params.status = 128 + WEXITSTATUS(status);
+          params.status = WEXITSTATUS(status);
 
 
         } else if (WIFSIGNALED(status)) {
