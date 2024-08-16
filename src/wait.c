@@ -100,6 +100,7 @@ wait_on_fg_pgid(pid_t const pgid)
      */
     if (WIFSTOPPED(status)) {
       fprintf(stderr, "[%jd] Stopped\n", (intmax_t)jid);
+      jobs_set_status(jid, pgid); 
       goto out;
     }
 
