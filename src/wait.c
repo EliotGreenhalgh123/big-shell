@@ -19,19 +19,24 @@ wait_on_fg_pgid(pid_t const pgid)
   jid_t const jid = jobs_get_jid(pgid);
   if (jid < 0) return -1;
   /* Make sure the foreground group is running */
-  /* DONE send the "continue" signal to the process group 'pgid'
+  /* 
    * XXX review kill(2)
    */
 
+  /* send continue signal to the process group pgid with call to kill */
   if (kill(pgid, SIGCONT) != 0) {
-    /* TODO error message */
     return -1;
   } 
 
 
   if (is_interactive) {
-    /* DONE make 'pgid' the foreground process group
-     * XXX review tcsetpgrp(3) */
+    /*
+     * is_interactive flag is set
+     * call to tcsetpgrp to set the process group as the shell's foreground process 
+     * so input data is sent to this pg
+     */
+  
+     /* XXX review tcsetpgrp(3) */
     if (tcsetpgrp(STDIN_FILENO, pgid) != 0) {
       return -1;
     }
@@ -63,27 +68,15 @@ wait_on_fg_pgid(pid_t const pgid)
         errno = 0;
         if (jobs_get_status(jid, &status) < 0) goto err;
         if (WIFEXITED(status)) {
-
-
-          /* DONE set params.status to the correct value */
+          /* if exited via exit, set status to exit status of child  */
           params.status = WEXITSTATUS(status);
-
-
         } else if (WIFSIGNALED(status)) {
-
-
-          /* DONE set params.status to the correct value */
-          // 
+          /* if terminated via signal, set status to 128 + the signal number */
           params.status = 128 + WTERMSIG(status);
-
-
         }
 
-        /* DONE remove the job for this group from the job list
-         *  see jobs.h
-         */
+        /* all child processes in the group accounted for so remove it from the joblist */
         jobs_remove_pgid(pgid);
-
 
         goto out;
       }
@@ -95,13 +88,11 @@ wait_on_fg_pgid(pid_t const pgid)
     /* Record status for reporting later when we see ECHILD */
     if (jobs_set_status(jid, status) < 0) goto err;
 
-    /* DONE handle case where a child process is stopped
-     *  The entire process group is placed in the background
-     */
+    /* Handles case where a child process is stopped */
     if (WIFSTOPPED(status)) {
       fprintf(stderr, "[%jd] Stopped\n", (intmax_t)jid);
-      jobs_set_status(jid, pgid); 
-      goto out;
+      /* if the child process is stopped, use tcsetpgrp to place the entire group in the background */
+      if (tcsetpgrp(STDIN_FILENO, pgid) < 0) goto out;
     }
 
     /* A child exited, but others remain. Loop! */
@@ -116,20 +107,20 @@ out:
   if (is_interactive) {
 
 
-    /* TODO make bigshell the foreground process group again
+    /* if in interactive mode, set bigshell as the foreground process group again
      * XXX review tcsetpgrp(3)
      *
      * Note: this will cause bigshell to receive a SIGTTOU signal.
      *       You need to also finish signal.c to have full functionality here.
      *       Otherwise your bigshell will get stopped.
      */
-     /*  */
-
+    /* getpgrp returns the pgid of the calling process (bighsell) */
     pid_t this_pgid = getpgrp();
 
     //printf("[%jd]", (intmax_t)this_pgid);
 
-     if (tcsetpgrp(0, this_pgid) != 0) {
+    /* set pgid of bighsell as the fg process */
+     if (tcsetpgrp(STDIN_FILENO, this_pgid) != 0) {
       retval = -1;
     }  
     
@@ -157,11 +148,11 @@ wait_on_bg_jobs()
     for (;;) {
 
 
-      /* DONE: Modify the following line to wait for process group
-       * XXX make sure to do a nonblocking wait!
+      /* 
+       * waits for a child process in thhe group to return
        */
       int status;
-      /* set WNOHANG flag to ensure nonblocking wait */
+      /* set WNOHANG flag to ensure wait does not block  */
       pid_t pid = waitpid(pgid, &status, WNOHANG);
 
       
