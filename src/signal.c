@@ -35,11 +35,12 @@ static struct sigaction ignore_action = {.sa_handler = SIG_IGN},
 int
 signal_init(void)
 {
-  /* DONE Initialize signals, store old actions 
+  /* Initialize signals, store old actions 
    *
    * e.g. sigaction(SIGNUM, &new_handler, &saved_old_handler);
    *
-   * */
+   */
+
   /* 
    * sigaction specifies the behavior of the given signal 
    * the signals SIGTSTP, SIGINT, and SIGTTOU are set to be ignored (.sa_handler = SIG_IGN)
@@ -54,7 +55,7 @@ signal_init(void)
   if (sigaction(SIGTTOU, &ignore_action, &old_sigttou) != 0) {
     return -1;
   }
-  //errno = ENOSYS; /* not implemented */
+ 
   return 0;
 }
 
@@ -67,7 +68,8 @@ signal_init(void)
 int
 signal_enable_interrupt(int sig)
 {
-  /* DONE set the signal disposition for signal to interrupt  */
+  /* set the signal disposition for signal to interrupt  */
+
   /* 
    * assign the signal with interrupt action 
    * NULL pointer in place of oact indicates old signal disposition will not be saved
@@ -75,7 +77,7 @@ signal_enable_interrupt(int sig)
   if (sigaction(sig, &interrupt_action, NULL) != 0) {
     return -1;
   }
-  //errno = ENOSYS; /* not implemented */
+ 
   return 0;
 }
 
@@ -88,11 +90,11 @@ signal_enable_interrupt(int sig)
 int
 signal_ignore(int sig)
 {
-  /* DONE set the signal disposition for signal back to its old state */
+  /* set the signal disposition for signal back to its old state */
   if (sigaction(sig, &signal_ignore, NULL) != 0) {
     return -1;
   }
-  //errno = ENOSYS; /* not implemented */
+ 
   return 0;
 }
 
@@ -104,7 +106,7 @@ signal_ignore(int sig)
 int
 signal_restore(void)
 {
-  /* DONE restore old actions 
+  /* restore old actions 
    *
    * e.g. sigaction(SIGNUM, &saved_old_handler, NULL);
    *
@@ -118,6 +120,6 @@ signal_restore(void)
   if (sigaction(SIGTTOU, &old_sigttou, NULL) != 0) {
     return -1;
   }
-  //errno = ENOSYS; /* not implemented */
+ 
   return 0;
 }

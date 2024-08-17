@@ -42,11 +42,11 @@ expand_command_words(struct command *cmd)
   for (size_t i = 0; i < cmd->word_count; ++i) {
     expand(&cmd->words[i]);
   }
-  /* DONE Assignment values */
+  /* expand all assignment values using the builtin expand */
   for (size_t i = 0; i < cmd->assignment_count; ++i) {
     expand(&cmd->assignments[i]->value);
   }
-  /* DONE I/O Filenames */
+  /* expand all i/o filenames using the builtin expand */
   for (size_t i = 0; i < cmd->io_redir_count; ++i) {
     expand(&cmd->io_redirs[i]->filename);
   }
@@ -66,15 +66,16 @@ do_variable_assignment(struct command const *cmd, int export_all)
 {
   for (size_t i = 0; i < cmd->assignment_count; ++i) {
     struct assignment *a = cmd->assignments[i];
-    /* DONE Assign */
 
     //printf("%s, %s", a->name, a->value);
 
+    /* call builtin vars_set on the assignment's name and value to properly assign*/
     if (vars_set(a->name, a->value) < 0) {
       return -1;
     }
-    /* DONE Export (if export_all != 0) */
+    /* Export (if export_all != 0) */
     if (export_all != 0) {
+      /* call builtin export function to export the var to shell env */
       if (vars_export(a->name) < 0) {
         return -1;
       }
@@ -87,7 +88,7 @@ static int
 get_io_flags(enum io_operator io_op)
 {
   int flags = 0;
-  /* DONE: Each IO operator has specified behavior. Select the appropriate
+  /* Each IO operator has specified behavior. Select the appropriate
    * file flags.
    *
    * Note: labels not followed by a break statement fall through to the
@@ -118,20 +119,20 @@ get_io_flags(enum io_operator io_op)
   switch (io_op) {
     case OP_LESSAND: /* <& */
     case OP_LESS:    /* < */
-      flags = O_RDONLY;     /* DONE: open to read */
+      flags = O_RDONLY;     /* open to read */
       break;
     case OP_GREATAND: /* >& */
     case OP_GREAT:    /* > */
-      flags = O_WRONLY | O_CREAT | O_EXCL;      /* DONE: open to write, create if doesn't exist, fail if exist */
+      flags = O_WRONLY | O_CREAT | O_EXCL;      /* open to write, create if doesn't exist, fail if exist */
       break;
     case OP_DGREAT: /* >> */
-      flags = O_WRONLY | O_CREAT | O_APPEND;    /* DONE: open to write, create if doesn't exist, append mode */
+      flags = O_WRONLY | O_CREAT | O_APPEND;    /* open to write, create if doesn't exist, append mode */
       break;
     case OP_LESSGREAT: /* <> */
-      flags = O_RDWR | O_CREAT;       /* DONE: open to read/write, create if doesn't exist */
+      flags = O_RDWR | O_CREAT;       /* open to read/write, create if doesn't exist */
       break;
     case OP_CLOBBER: /* >| */
-      flags = O_WRONLY | O_CREAT | O_TRUNC;     /* DONE: open to write, create if doesn't exist, truncate mdoe */
+      flags = O_WRONLY | O_CREAT | O_TRUNC;     /* open to write, create if doesn't exist, truncate mdoe */
       break;
   }
   return flags;
@@ -151,14 +152,14 @@ static int
 move_fd(int src, int dst)
 {
   if (src == dst) return dst;
-  /* DONE move src to dst 
+  /* move src to dst 
   * dup2 causes dst to refer to src, if a negative int is returned, dup2
   * failed. Else, dup2 returns the filedes of dst
   */
   if (dup2(src, dst) < 0) {
     return -1; 
   }
-  /* DONE close src 
+  /* close src file
   * if close does not return 0, then error has occured. Else src is closed
   */
   if (close(src) != 0) {
@@ -294,7 +295,7 @@ do_builtin_io_redirects(struct command *cmd, struct builtin_redir **redir_list)
  * will only ever happen in forked child processes--and can't affect the shell
  * itself. Iterate over the list of redirections and apply each one in sequence.
  *
- * DONE
+ * 
  */
 static int
 do_io_redirects(struct command *cmd)
@@ -312,12 +313,13 @@ do_io_redirects(struct command *cmd)
 
         
         /* [n]>&- and [n]<&- close file descriptor [n] */
-        /* DONE close file descriptor n.
+        /* close file descriptor n.
          *
          * XXX What is n? Look for it in `struct io_redir->???` (parser.h)
          * n is io_number;  Left-hand file descriptor operand  
          */
-         // if fclose returns EOF, goto err
+
+         /* if fclose returns EOF, goto err */ 
          if (fclose(r->io_number) != 0) {
           goto err;
          }
@@ -341,7 +343,7 @@ do_io_redirects(struct command *cmd)
             && src <= INT_MAX /* <--- this is *critical* bounds checking when
                                  downcasting */
         ) {
-          /* DONE duplicate src to dst. 
+          /* duplicate src to dst. 
           * use move_fd to move src to dest (r->io_number is the filedes)
           * if it is an error, goto err
           */
@@ -363,12 +365,12 @@ do_io_redirects(struct command *cmd)
     file_open:;
       int flags = get_io_flags(r->io_op);
       gprintf("attempting to open file %s with flags %d", r->filename, flags);
-      /* DONE Open the specified file with the appropriate flags and mode
+      /* Open the specified file with the appropriate flags and mode
        *
        * XXX Note: you can supply a mode to open() even if you're not creating a
        * file. it will just ignore that argument.
        */
-      /* open the file with the specified flags, create if not exist (0777) mode */
+      /* open the file with the specified flags from the io_redir, create if not exist (0777) mode */
       int open_filedes;
       open_filedes = open(r->filename, flags, 0777) ;
 
@@ -377,7 +379,7 @@ do_io_redirects(struct command *cmd)
         goto err;
       }
 
-      /* DONE Move the opened file descriptor to the redirection target */
+      /* Move the opened file descriptor to the redirection target */
       /* XXX use move_fd() */
       /* use move_fd so the opened filedes is refered to by redirection target */
       if (move_fd(open_filedes, r->io_number) < 0) {
@@ -443,9 +445,11 @@ run_command_list(struct command_list *cl)
      * [DONE] Update upstream_pipefd initializer to get the (READ) side of the
      *        pipeline saved from the previous command
      */
-    /* point the upstream pipe filedes to the filedes of the pipeline data struct 
-    *  if there is no upstream pipe, this value defaults to -1
-    */
+
+    /* 
+     * point the upstream pipe filedes to the filedes of the pipeline data struct 
+     * if there is no upstream pipe, this value defaults to -1
+     */
     int const upstream_pipefd = pipeline_data.pipe_fd;
     int const has_upstream_pipe = (upstream_pipefd >= 0);
 
@@ -492,18 +496,18 @@ run_command_list(struct command_list *cl)
 
     pid_t child_pid = 0;
     /*
-     * [DONE] Fork process if:
+     * Fork process if:
      *       Not a buitin command, OR
      *       Not a foreground command
-     * [DONE] Re-assign child_pid to the new process id
-     * [DONE] Handle errors if they occur
+     * Re-assign child_pid to the new process id
+     * [Handle errors if they occur
      */
 
 
     // fork if not a builtin or not a foreground command
     int const did_fork = !is_builtin || !is_fg; 
     if (did_fork) {
-      /* [DONE] fork */
+      /* fork */
       /* 
       /* assign child_pid to the new pid returned by fork()
       /* if fork fails and returns a negative value, goto error
@@ -599,15 +603,15 @@ run_command_list(struct command_list *cl)
          * [DONE] move downstream_pipefd to STDOUT_FILENO if it's valid
          */
 
-         // move upstream pipe to stdin
+         // move upstream pipe to stdin with move_fd
          if (has_upstream_pipe) {
-          if (move_fd(upstream_pipefd, 0) < 0) {
+          if (move_fd(upstream_pipefd, STDIN_FILENO) < 0) {
             goto err;
           }
          }
-         // move downstream pipe fd to stdout 
+         // move downstream pipe fd to stdout with move_fd
          if (has_downstream_pipe) {
-          if (move_fd(downstream_pipefd, 1) < 0) {
+          if (move_fd(downstream_pipefd, STDOUT_FILENO) < 0) {
             goto err;
           }
          }
@@ -627,7 +631,7 @@ run_command_list(struct command_list *cl)
         if (signal_restore() < 0) err(1, 0);
 
         /* Execute the command */
-        /* [DONE] execute the command described by the list of words
+        /* execute the command described by the list of words
          * (cmd->words).
          *
          *  XXX Carefully review man 3 exec. Choose the correct function that:
@@ -637,7 +641,6 @@ run_command_list(struct command_list *cl)
          *
          *  XXX Note: cmd->words is a null-terminated array of strings. Nice!
          */
-
 
         /*
         execvp() takes array of points to null-terminated array of strings 

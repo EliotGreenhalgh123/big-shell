@@ -31,19 +31,20 @@ static int
 is_valid_varname(char const *name)
 {
   assert(name);
-  /* TODO: Implement me.
+  /* 
    * Refer to:
    *  3.230 Name. Base Definitions. POSIX.1-2008
    *  regex to match: [A-Za-z_][A-Za-z0-9_]*
    *
    * You'll most definitely want to use functions from: ctype.h(0P)
    */
+
   // if the first character in name is not _ or not alphabetic, return 0 to indicate not valid
   if (name[0] != '_' && !isalpha((unsigned char)name[0])) {
     return 0;
   }
  
-  // iterate over name until a null terminator is reached
+  // iterate over name until null terminator 
   int i = 0;
   while (name[i] != '\0') {
     // if name[i] is not alphanumeric or is not underscore, return 0 to indicate not valid
@@ -52,7 +53,6 @@ is_valid_varname(char const *name)
     }
     i += 1;
   }
-  //errno = ENOSYS; /* Not implemented */
 
   return 1;
 }
@@ -67,9 +67,10 @@ is_valid_varname(char const *name)
 int
 vars_is_valid_varname(char const *name)
 {
-  /* TODO: Implement argument validation before tail-calling internal
-   * is_valid_varname() function. */
-  
+  /* 
+   * validate the name argument and return -1 if name is null 
+   * to avoid calling is_valid_varname with null value
+  */
   if (!name) return -1;
   return is_valid_varname(name); 
 }

@@ -102,14 +102,17 @@ builtin_cd(struct command *cmd, struct builtin_redir const *redir_list)
     target_dir = cmd->words[1];
   }
 
-  /* if chdir returns -1, raise error */
+  /* if chdir returns -1, raise error and return -1 */
   if (chdir(target_dir) == -1) {
     dprintf(get_pseudo_fd(redir_list, STDERR_FILENO), "cd: chdir failed\n");
     return -1; 
   }
 
-  /* use getcwd to correctly retrieve the new working directory after
-     successful chdir */
+  /* 
+   * use getcwd to correctly retrieve the new working directory after
+   * successful chdir 
+   * Consulted: https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-getcwd-get-path-name-working-directory
+   */
   char const current_directory[256]; 
   // getcwd returns NULL pointer if valid pathname pointer cannot be returned
   if (getcwd(current_directory, sizeof(current_directory)) == NULL) {
@@ -149,9 +152,9 @@ builtin_exit(struct command *cmd, struct builtin_redir const *redir_list)
     return -1;
   }
 
+  /* exit is called with an exit value */
   else if (cmd->word_count == 2) {
     char *endptr;
-
     char *exit_val_str = cmd->words[1];
 
     /* ensure that exit value is a numeric type, else return -1 */
@@ -176,14 +179,10 @@ builtin_exit(struct command *cmd, struct builtin_redir const *redir_list)
     }
     */ 
     
+    /* set the status to the validated exit value */
     params.status = exitval; 
   }
 
-
-
-
-
-  /* TODO: Set params.status to the appropriate value before exiting */
   bigshell_exit();
   return -1;
 }
@@ -224,12 +223,8 @@ static int
 builtin_unset(struct command *cmd, struct builtin_redir const *redir_list)
 {
   for (size_t i = 1; i < cmd->word_count; ++i) {
-    /* TODO: Unset variables */
-
-  
+    /* Iterate through words and call the builtin unset on each */
     vars_unset(cmd->words[i]); 
-
-
   }
   return 0;
 }
