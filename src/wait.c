@@ -91,8 +91,7 @@ wait_on_fg_pgid(pid_t const pgid)
     /* Handles case where a child process is stopped */
     if (WIFSTOPPED(status)) {
       fprintf(stderr, "[%jd] Stopped\n", (intmax_t)jid);
-      /* if the child process is stopped, use tcsetpgrp to place the entire group in the background */
-      if (tcsetpgrp(STDIN_FILENO, pgid) < 0) goto out;
+      goto out; 
     }
 
     /* A child exited, but others remain. Loop! */
